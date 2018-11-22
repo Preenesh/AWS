@@ -1,4 +1,4 @@
-<img src="images/awslogo.png" width="100"> # Amazon Web Services
+# Amazon Web Services <img src="images/awslogo.png" width="100">
 
 Scripts here can be used to automate or help automate various task on Amazon Web Services.
 
