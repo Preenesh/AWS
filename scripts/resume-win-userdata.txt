@@ -1,0 +1,71 @@
+$UserData = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(
+@'
+<powershell>
+$path= 'HKLM:\Software\UserData'
+ 
+if(!(Get-Item $Path -ErrorAction SilentlyContinue)) {
+New-Item $Path
+New-ItemProperty -Path $Path -Name RunCount -Value 0 -PropertyType dword
+}
+ 
+$runCount = Get-ItemProperty -Path $path -Name Runcount -ErrorAction SilentlyContinue |
+Select-Object -ExpandProperty RunCount
+ 
+if($runCount -ge 0) {
+switch($runCount) {
+0 {
+#Increment the RunCount
+Set-ItemProperty -Path $Path -Name RunCount -Value 1
+ 
+#Enable user data
+$EC2SettingsFile = "$env:ProgramFiles\Amazon\Ec2ConfigService\Settings\Config.xml"
+$xml = [xml](Get-Content $EC2SettingsFile)
+$xmlElement = $xml.get_DocumentElement()
+$xmlElementToModify = $xmlElement.Plugins
+ 
+foreach ($element in $xmlElementToModify.Plugin)
+{
+if ($element.name -eq "Ec2HandleUserData")
+{
+$element.State="Enabled"
+}
+}
+$xml.Save($EC2SettingsFile)
+ 
+#Rename Server and Restart
+Rename-Computer -NewName DMTEST -Restart
+}
+1 {
+#Increment the RunCount
+Set-ItemProperty -Path $Path -Name RunCount -Value 2
+ 
+#Enable user data
+$EC2SettingsFile = "$env:ProgramFiles\Amazon\Ec2ConfigService\Settings\Config.xml"
+$xml = [xml](Get-Content $EC2SettingsFile)
+$xmlElement = $xml.get_DocumentElement()
+$xmlElementToModify = $xmlElement.Plugins
+ 
+foreach ($element in $xmlElementToModify.Plugin)
+{
+if ($element.name -eq "Ec2HandleUserData")
+{
+$element.State="Enabled"
+}
+}
+$xml.Save($EC2SettingsFile)
+ 
+#Change the local admin password
+([adsi]("WinNT://$env:COMPUTERNAME/administrator, user")).psbase.invoke('SetPassword', 'DMAWSP@ssw0rd')
+ 
+#Restart
+Restart-Computer
+}
+2 {
+#Install Windows Feature
+Install-WindowsFeature -Name NET-Framework-Core
+}
+}
+}
+</powershell>
+'@
+))

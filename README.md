@@ -8,6 +8,6 @@ The target audience is someone having experience in supporting Amazon Web Servic
 
 ## Scripts
 
-* [Coming Soon](commingsoon.md)
+* [Resume Windows Server Configuration after Restart using userdata in AWS using PowerShell](scripts/resume-win-userdata.txt)
 
 > Note All Trademarks and Copyrights belong to their owners and are used for identification only.
